@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JZ_VAPE Loyalty</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F0; --surface: #FFFFFF; --border: rgba(0,0,0,0.1);
+    --border-med: rgba(0,0,0,0.18); --text: #1A1A18; --muted: #6B6B67;
+    --accent: #4A2FBD; --accent-light: #EDE9FB; --accent-mid: #7B61E4;
+    --green: #1A6B3A; --green-light: #E4F5EC; --red: #A32020;
+    --red-light: #FAECEC; --stamp-empty: #E8E6E0; --radius: 12px; --radius-sm: 8px;
+    --orange: #B45309; --orange-light: #FEF3C7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar-logo { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
+  .logo-mark { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .role-pill { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 3px 10px; }
+  .logout-btn { font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--border-med); border-radius: 20px; padding: 6px 14px; cursor: pointer; font-family: inherit; }
+  .logout-btn:hover { background: var(--bg); }
+  .page { padding: 20px 16px; max-width: 480px; margin: 0 auto; width: 100%; }
+  .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--stamp-empty); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--muted); }
+
+  /* LOGIN */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+  .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 28px; width: 100%; max-width: 360px; }
+  .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+  .login-logo-mark { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; }
+  .login-logo-text { font-size: 20px; font-weight: 600; }
+  .login-label { font-size: 13px; color: var(--muted); margin-bottom: 10px; display: block; text-align: center; }
+  .login-input { width: 100%; height: 52px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); padding: 0 14px; font-size: 24px; font-family: 'DM Mono', monospace; letter-spacing: 0.2em; text-align: center; background: var(--bg); color: var(--text); outline: none; }
+  .login-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,47,189,0.12); }
+  .login-input-sm { width: 100%; height: 44px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); padding: 0 14px; font-size: 15px; font-family: inherit; background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; }
+  .login-input-sm:focus { border-color: var(--accent); }
+  .login-btn { width: 100%; height: 44px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; margin-top: 4px; }
+  .login-btn:hover { background: #3821A8; }
+  .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .login-err { font-size: 13px; color: var(--red); margin-top: 10px; background: var(--red-light); padding: 8px 12px; border-radius: 6px; display: none; }
+  .login-hint { font-size: 12px; color: var(--muted); margin-top: 16px; text-align: center; }
+  .login-switch { font-size: 12px; color: var(--accent); margin-top: 14px; text-align: center; cursor: pointer; text-decoration: underline; }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 12px; }
+  .stat-n { font-size: 26px; font-weight: 600; line-height: 1; }
+  .stat-l { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* TABS */
+  .tabs { display: flex; background: var(--stamp-empty); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 18px; gap: 3px; }
+  .tab { flex: 1; height: 34px; border: none; background: transparent; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+  /* CUSTOMER LIST */
+  .cust-list { display: flex; flex-direction: column; gap: 10px; }
+  .cust-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .cust-body { flex: 1; min-width: 0; }
+  .cust-name { font-size: 14px; font-weight: 600; }
+  .cust-code { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+  .stamp-dots { display: flex; gap: 4px; margin-top: 7px; flex-wrap: wrap; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; }
+  .dot.on { background: var(--accent); }
+  .dot.off { background: var(--stamp-empty); }
+  .dot.full { background: var(--green); }
+  .cust-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .stamp-btn { height: 34px; padding: 0 14px; border: 1px solid rgba(74,47,189,0.25); border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; background: var(--accent-light); color: var(--accent); white-space: nowrap; }
+  .stamp-btn:hover { background: #D8D0F8; }
+  .redeem-btn { background: var(--green-light); color: var(--green); border-color: rgba(26,107,58,0.25); }
+  .redeem-btn:hover { background: #C8EDD7; }
+  .utang-btn { height: 34px; padding: 0 14px; border: 1px solid rgba(180,83,9,0.25); border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; background: var(--orange-light); color: var(--orange); white-space: nowrap; }
+  .utang-btn:hover { background: #FDE68A; }
+  .ready-tag { font-size: 11px; font-weight: 600; color: var(--green); background: var(--green-light); border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 5px; }
+  .utang-tag { font-size: 11px; font-weight: 600; color: var(--orange); background: var(--orange-light); border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 5px; }
+
+  /* FORMS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+  .section-label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  .field input, .field textarea { width: 100%; height: 40px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); padding: 0 12px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); outline: none; }
+  .field input:focus { border-color: var(--accent); }
+  .code-box { background: var(--accent-light); border-radius: var(--radius-sm); padding: 12px; text-align: center; margin-bottom: 12px; }
+  .code-box-label { font-size: 11px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .code-box-num { font-size: 28px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: 0.2em; color: var(--accent); }
+  .btn-row { display: flex; gap: 8px; }
+  .add-btn { flex: 1; height: 40px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .add-btn:hover { background: #3821A8; }
+  .add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .regen-btn { height: 40px; padding: 0 14px; background: var(--stamp-empty); color: var(--text); border: none; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; font-family: inherit; }
+  .regen-btn:hover { background: #D3D1C7; }
+
+  /* SEARCH */
+  .search-wrap { position: relative; margin-bottom: 14px; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; }
+  .search-input { width: 100%; height: 40px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); padding: 0 12px 0 36px; font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+
+  /* LOYALTY CARD */
+  .loyalty-card-visual { background: var(--accent); border-radius: var(--radius); padding: 24px; color: #fff; margin-bottom: 16px; position: relative; overflow: hidden; }
+  .loyalty-card-visual::before { content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+  .loyalty-card-visual::after { content: ''; position: absolute; bottom: -50px; left: -20px; width: 130px; height: 130px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+  .lc-shop { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.65; margin-bottom: 4px; }
+  .lc-name { font-size: 22px; font-weight: 600; margin-bottom: 2px; }
+  .lc-code { font-size: 13px; font-family: 'DM Mono', monospace; letter-spacing: 0.18em; opacity: 0.6; margin-bottom: 22px; }
+  .lc-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+  .lc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .lc-dot { aspect-ratio: 1; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  .lc-dot.on { background: rgba(255,255,255,0.9); color: var(--accent); }
+  .lc-count { text-align: right; }
+  .lc-num { font-size: 36px; font-weight: 700; line-height: 1; }
+  .lc-denom { font-size: 13px; opacity: 0.6; }
+  .reward-banner { background: var(--green-light); border: 1px solid rgba(26,107,58,0.2); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 14px; color: var(--green); font-weight: 500; text-align: center; margin-bottom: 16px; }
+  .progress-wrap { margin-bottom: 18px; }
+  .progress-bar-bg { height: 6px; background: var(--stamp-empty); border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent-mid); border-radius: 3px; }
+  .progress-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* HISTORY */
+  .hist-list { display: flex; flex-direction: column; gap: 8px; }
+  .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .hist-left { display: flex; align-items: center; gap: 10px; }
+  .hist-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .hist-icon.stamp { background: var(--accent-light); }
+  .hist-icon.reward { background: var(--green-light); }
+  .hist-text { font-size: 13px; font-weight: 500; }
+  .hist-date { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+  .hist-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .hist-badge.stamp { background: var(--accent-light); color: var(--accent); }
+  .hist-badge.reward { background: var(--green-light); color: var(--green); }
+
+  /* UTANG */
+  .utang-summary { background: var(--orange-light); border: 1px solid rgba(180,83,9,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .utang-summary-label { font-size: 13px; color: var(--orange); font-weight: 500; }
+  .utang-summary-amount { font-size: 22px; font-weight: 700; color: var(--orange); }
+  .utang-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 8px; }
+  .utang-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .utang-item-amount { font-size: 16px; font-weight: 600; }
+  .utang-item-date { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .utang-item-note { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .utang-progress-bg { height: 5px; background: var(--stamp-empty); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+  .utang-progress-fill { height: 100%; background: var(--orange); border-radius: 3px; }
+  .utang-progress-label { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+  .utang-paid-badge { font-size: 11px; font-weight: 600; background: var(--green-light); color: var(--green); border-radius: 20px; padding: 2px 10px; }
+  .payment-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-top: 0.5px solid var(--border); margin-top: 8px; }
+  .payment-item-amount { font-size: 12px; font-weight: 600; color: var(--green); }
+  .payment-item-date { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1A1A18; color: #fff; padding: 11px 20px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 999; white-space: nowrap; max-width: 90vw; text-align: center; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* MODAL */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 200; padding: 0; }
+  .modal-box { background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; padding: 24px 20px 32px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+  .modal-body { font-size: 14px; color: var(--muted); margin-bottom: 22px; line-height: 1.55; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-cancel { flex: 1; height: 40px; border: 1px solid var(--border-med); background: none; border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; cursor: pointer; }
+  .modal-confirm { flex: 1; height: 40px; background: var(--green); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .modal-confirm.danger { background: var(--red); }
+  .modal-confirm.orange { background: var(--orange); }
+  .modal-input { width: 100%; height: 44px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); padding: 0 12px; font-size: 16px; font-family: inherit; background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; display: block; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+  .empty-icon { font-size: 32px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+// ─── CONFIG ───────────────────────────────────────────
+const MAX_STAMPS = 10;
+const SHOP_NAME  = "JZ_VAPE";
+const SUPA_URL   = "https://qpaxmazdphtgismkavuq.supabase.co";
+const SUPA_KEY   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwYXhtYXpkcGh0Z2lzbWthdnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODY2NzIsImV4cCI6MjA5MTA2MjY3Mn0.A2AAVq_ICJcnFcqCiOZWLk59hWfyh1BCIZ5td86FokY";
+// ─────────────────────────────────────────────────────
+
+const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let customers = [];
+let state = {
+  view:"login", role:null, customerId:null,
+  tab:"customers", search:"", previewCode:null,
+  loginMode:"customer", modal:null
+};
+
+// ─── HELPERS ─────────────────────────────────────────
+function initials(n) { return n.trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
+function dateNow() { return new Date().toLocaleDateString("fil-PH",{month:"short",day:"numeric",year:"numeric"}); }
+function genCode() {
+  const used = new Set(customers.map(c=>c.phone));
+  let code;
+  do { code = String(Math.floor(10000000 + Math.random()*90000000)); } while(used.has(code));
+  return code;
+}
+function uid() { return Math.random().toString(36).slice(2,10); }
+function peso(n) { return '₱'+Number(n).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function totalUtang(c) {
+  return (c.utang||[]).reduce((sum,u)=>sum+(u.remaining??u.amount),0);
+}
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove("show"), 2800);
+}
+function render() {
+  document.getElementById("app").innerHTML = buildApp();
+  const old = document.getElementById("modal-root");
+  if (old) old.remove();
+  if (state.modal) {
+    const d = document.createElement("div");
+    d.id = "modal-root"; d.innerHTML = state.modal();
+    document.body.appendChild(d);
+  }
+  bindEvents();
+}
+
+// ─── DATABASE ─────────────────────────────────────────
+async function dbLoad() {
+  const {data,error} = await sb.from("customers").select("*").order("created_at",{ascending:true});
+  if (error) { console.error(error); return false; }
+  customers = data||[]; return true;
+}
+async function dbAdd(name, code) {
+  const {data,error} = await sb.from("customers")
+    .insert([{name, phone:code, stamps:0, history:[], utang:[]}]).select().single();
+  if (error) throw error; return data;
+}
+async function dbUpdate(id, fields) {
+  const {error} = await sb.from("customers").update(fields).eq("id",id);
+  if (error) throw error;
+}
+async function dbGetByCode(code) {
+  const {data,error} = await sb.from("customers")
+    .select("*").eq("phone", code.replace(/\D/g,"")).maybeSingle();
+  if (error) return null; return data;
+}
+
+// ─── BUILD HTML ───────────────────────────────────────
+function buildApp() {
+  if (state.view==="loading") return `<div class="loading-screen"><div class="spinner"></div><div class="loading-text">Naglo-load...</div></div>`;
+  if (state.view==="login") return buildLogin();
+  return `
+    <div class="topbar">
+      <div class="topbar-logo"><div class="logo-mark">★</div><span>${SHOP_NAME}</span></div>
+      <div class="topbar-right">
+        <span class="role-pill">${state.role==="admin"?"Admin":"Customer"}</span>
+        <button class="logout-btn" id="btn-logout">Logout</button>
+      </div>
+    </div>
+    <div class="page">${state.role==="admin"?buildAdmin():buildCustomer()}</div>`;
+}
+
+function buildLogin() {
+  if (state.loginMode==="admin") {
+    return `
+      <div class="login-wrap"><div class="login-box">
+        <div class="login-logo">
+          <div class="login-logo-mark">★</div>
+          <span class="login-logo-text">${SHOP_NAME}</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Admin Login</p>
+        <input class="login-input-sm" id="inp-email" type="email" placeholder="Email" autocomplete="off" />
+        <input class="login-input-sm" id="inp-password" type="password" placeholder="Password" />
+        <div class="login-err" id="login-err">Mali ang email o password.</div>
+        <button class="login-btn" id="btn-login">Mag-login bilang Admin</button>
+        <p class="login-switch" id="switch-mode">← Customer login</p>
+      </div></div>`;
+  }
+  return `
+    <div class="login-wrap"><div class="login-box">
+      <div class="login-logo">
+        <div class="login-logo-mark">★</div>
+        <span class="login-logo-text">${SHOP_NAME}</span>
+      </div>
+      <label class="login-label">Enter your 8-digit loyalty code</label>
+      <input class="login-input" id="inp-login" type="number" inputmode="numeric" placeholder="00000000" autocomplete="off" />
+      <div class="login-err" id="login-err">Code not found. Check with your admin.</div>
+      <button class="login-btn" id="btn-login">Enter</button>
+      <p class="login-hint">Contact staff if you don't have a code yet.</p>
+      <p class="login-switch" id="switch-mode">Staff / Admin login →</p>
+    </div></div>`;
+}
+
+function buildAdmin() {
+  const total = customers.length;
+  const totalStamps = customers.reduce((a,c)=>a+(c.stamps||0),0);
+  const readyCount = customers.filter(c=>(c.stamps||0)>=MAX_STAMPS).length;
+  const totalDebt = customers.reduce((a,c)=>a+totalUtang(c),0);
+
+  const stats = `
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-n">${total}</div><div class="stat-l">Customers</div></div>
+      <div class="stat"><div class="stat-n">${totalStamps}</div><div class="stat-l">Total Stamps</div></div>
+      <div class="stat" style="border-color:rgba(180,83,9,0.3);background:var(--orange-light)">
+        <div class="stat-n" style="color:var(--orange);font-size:18px">${peso(totalDebt)}</div>
+        <div class="stat-l">Total Utang</div>
+      </div>
+    </div>`;
+
+  const tabs = `
+    <div class="tabs">
+      <button class="tab ${state.tab==="customers"?"active":""}" data-tab="customers">Mga Customer</button>
+      <button class="tab ${state.tab==="add"?"active":""}" data-tab="add">+ Magdagdag</button>
+    </div>`;
+
+  if (state.tab==="add") {
+    if (!state.previewCode) state.previewCode = genCode();
+    return stats+tabs+`
+      <div class="card">
+        <div class="section-label">Bagong Customer</div>
+        <div class="field"><label>Pangalan</label><input id="inp-name" placeholder="Juan Santos" /></div>
+        <div class="code-box">
+          <div class="code-box-label">Auto-generated loyalty code</div>
+          <div class="code-box-num" id="code-preview">${state.previewCode}</div>
+        </div>
+        <div class="btn-row">
+          <button class="regen-btn" id="btn-regen">🔄 Bago</button>
+          <button class="add-btn" id="btn-add">Idagdag</button>
+        </div>
+      </div>`;
+  }
+
+  const q = state.search.toLowerCase();
+  const list = q ? customers.filter(c=>c.name.toLowerCase().includes(q)||(c.phone||"").includes(q)) : customers;
+  const searchBar = `
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="inp-search" placeholder="Hanapin..." value="${state.search}" />
+    </div>`;
+  if (!list.length) return stats+tabs+searchBar+`<div class="empty"><div class="empty-icon">👥</div>${customers.length===0?"Walang customers pa.":"Walang nahanap."}</div>`;
+
+  const rows = list.map(c=>{
+    const stamps=c.stamps||0, full=stamps>=MAX_STAMPS;
+    const debt=totalUtang(c);
+    const dots=Array.from({length:MAX_STAMPS},(_,i)=>`<div class="dot ${i<stamps?(full?"full":"on"):"off"}"></div>`).join("");
+    return `
+      <div class="cust-row">
+        <div class="avatar">${initials(c.name)}</div>
+        <div class="cust-body">
+          <div class="cust-name">${c.name}</div>
+          <div class="cust-code"># ${c.phone||"—"}</div>
+          <div class="stamp-dots">${dots}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">
+            ${full?`<div class="ready-tag">✓ Ready para sa reward!</div>`:`<div style="font-size:11px;color:var(--muted)">${stamps}/${MAX_STAMPS} stamps</div>`}
+            ${debt>0?`<div class="utang-tag">Utang: ${peso(debt)}</div>`:""}
+          </div>
+        </div>
+        <div class="cust-actions">
+          ${full
+            ?`<button class="stamp-btn redeem-btn" data-id="${c.id}" data-action="redeem">🎁 Redeem</button>`
+            :`<button class="stamp-btn" data-id="${c.id}" data-action="stamp">+ Stamp</button>`}
+          <button class="utang-btn" data-id="${c.id}" data-action="utang">💰 Utang</button>
+        </div>
+      </div>`;
+  }).join("");
+  return stats+tabs+searchBar+`<div class="cust-list">${rows}</div>`;
+}
+
+function buildCustomer() {
+  const c = customers.find(x=>String(x.id)===String(state.customerId));
+  if (!c) return `<div class="empty"><div class="empty-icon">👤</div>Account not found.</div>`;
+  const stamps=c.stamps||0, full=stamps>=MAX_STAMPS;
+  const pct=Math.min(100,Math.round((stamps/MAX_STAMPS)*100));
+  const grid=Array.from({length:MAX_STAMPS},(_,i)=>`<div class="lc-dot ${i<stamps?"on":""}">${i<stamps?"★":""}</div>`).join("");
+  const hist=Array.isArray(c.history)?c.history:[];
+  const utang=Array.isArray(c.utang)?c.utang:[];
+  const debt=totalUtang(c);
+
+  const utangSection = debt>0 ? `
+    <div class="utang-summary">
+      <div class="utang-summary-label">💰 Kabuuang Utang</div>
+      <div class="utang-summary-amount">${peso(debt)}</div>
+    </div>` : "";
+
+  const utangItems = utang.length>0 ? `
+    <div class="section-label" style="margin-top:8px">Mga Utang</div>
+    ${utang.map(u=>{
+      const remaining = u.remaining??u.amount;
+      const paid = u.amount - remaining;
+      const pct = Math.round((paid/u.amount)*100);
+      const payments = u.payments||[];
+      const isPaid = remaining<=0;
+      return `
+        <div class="utang-item">
+          <div class="utang-item-header">
+            <div>
+              <div class="utang-item-amount" style="color:${isPaid?'var(--green)':'var(--orange)'}">${peso(u.amount)}</div>
+              ${u.note?`<div class="utang-item-note">${u.note}</div>`:""}
+            </div>
+            <div style="text-align:right">
+              <div class="utang-item-date">${u.date}</div>
+              ${isPaid?`<span class="utang-paid-badge">Bayad na ✓</span>`:""}
+            </div>
+          </div>
+          ${!isPaid?`
+            <div class="utang-progress-bg"><div class="utang-progress-fill" style="width:${pct}%"></div></div>
+            <div class="utang-progress-label"><span>Nabayad: ${peso(paid)}</span><span>Natitira: ${peso(remaining)}</span></div>
+          `:""}
+          ${payments.map(p=>`
+            <div class="payment-item">
+              <span style="font-size:12px;color:var(--muted)">Bayad</span>
+              <span class="payment-item-amount">+${peso(p.amount)}</span>
+              <span class="payment-item-date">${p.date}</span>
+            </div>`).join("")}
+        </div>`;
+    }).join("")}` : "";
+
+  return `
+    <div class="loyalty-card-visual">
+      <div class="lc-shop">${SHOP_NAME}</div>
+      <div class="lc-name">${c.name}</div>
+      <div class="lc-code"># ${c.phone||"—"}</div>
+      <div class="lc-bottom">
+        <div class="lc-grid">${grid}</div>
+        <div class="lc-count"><div class="lc-num">${stamps}</div><div class="lc-denom">/ ${MAX_STAMPS}</div></div>
+      </div>
+    </div>
+    ${full?`<div class="reward-banner">🎁 Kumpleto na! Pumunta sa counter para i-claim ang reward.</div>`:""}
+    <div class="progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+      <div class="progress-label">${full?"🎉 Kumpleto na!":MAX_STAMPS-stamps+" stamps pa para sa libre!"}</div>
+    </div>
+    ${utangSection}
+    ${utangItems}
+    <div class="section-label" style="margin-top:${utang.length?'16px':'0'}">History</div>
+    ${hist.length===0
+      ?`<div class="empty" style="padding:20px 0"><div class="empty-icon">📋</div>Wala pang history.</div>`
+      :`<div class="hist-list">${hist.map(h=>`
+        <div class="hist-item">
+          <div class="hist-left">
+            <div class="hist-icon ${h.type}">${h.type==="reward"?"🎁":"★"}</div>
+            <div><div class="hist-text">${h.type==="reward"?"Reward na-redeem":"Stamp na-dagdag"}</div><div class="hist-date">${h.date}</div></div>
+          </div>
+          <span class="hist-badge ${h.type}">${h.type==="reward"?"Reward":"+1 stamp"}</span>
+        </div>`).join("")}</div>`}`;
+}
+
+// ─── MODAL BUILDERS ───────────────────────────────────
+function modalRedeem(c) {
+  return `<div class="modal-bg"><div class="modal-box">
+    <div class="modal-title">I-redeem ang Reward?</div>
+    <div class="modal-body">I-re-reset ang card ni <strong>${c.name}</strong>. Sigurado ka?</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="btn-modal-cancel">Kanselahin</button>
+      <button class="modal-confirm" id="btn-modal-confirm">Oo, I-redeem</button>
+    </div>
+  </div></div>`;
+}
+
+function modalUtang(c) {
+  const utang = Array.isArray(c.utang)?c.utang:[];
+  const unpaid = utang.filter(u=>(u.remaining??u.amount)>0);
+  const unpaidOptions = unpaid.map(u=>`<option value="${u.id}">${u.note||'Utang'} — ${peso(u.remaining??u.amount)} natitira (${u.date})</option>`).join("");
+
+  return `<div class="modal-bg"><div class="modal-box">
+    <div class="modal-title">💰 Utang ni ${c.name}</div>
+
+    <div style="margin-bottom:20px">
+      <div class="section-label">Mag-record ng Bagong Utang</div>
+      <label class="modal-label">Amount (₱)</label>
+      <input class="modal-input" id="utang-amount" type="number" placeholder="500" inputmode="decimal" />
+      <label class="modal-label">Note (optional — e.g. "2 pods")</label>
+      <input class="modal-input" id="utang-note" type="text" placeholder="2 pods, vape, etc." />
+      <button class="modal-confirm orange" style="width:100%;margin-top:4px" id="btn-add-utang">+ Idagdag ang Utang</button>
+    </div>
+
+    ${unpaid.length>0?`
+    <div>
+      <div class="section-label">Mag-record ng Bayad</div>
+      <label class="modal-label">Piliin ang utang</label>
+      <select class="modal-input" id="pay-utang-id" style="height:44px;padding:0 12px">
+        ${unpaidOptions}
+      </select>
+      <label class="modal-label">Amount na ibabayad (₱)</label>
+      <input class="modal-input" id="pay-amount" type="number" placeholder="200" inputmode="decimal" />
+      <button class="modal-confirm" style="width:100%;margin-top:4px" id="btn-add-payment">✓ I-record ang Bayad</button>
+    </div>`:""}
+
+    <button class="modal-cancel" style="width:100%;margin-top:12px" id="btn-modal-cancel">Isara</button>
+  </div></div>`;
+}
+
+// ─── EVENTS ───────────────────────────────────────────
+function bindEvents() {
+  const on=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener("click",fn);};
+
+  on("btn-login", doLogin);
+  on("switch-mode",()=>{ state.loginMode=state.loginMode==="admin"?"customer":"admin"; render(); });
+  document.getElementById("inp-login")?.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+  document.getElementById("inp-password")?.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+  document.getElementById("inp-login")?.addEventListener("input",e=>{e.target.value=e.target.value.replace(/\D/g,"").slice(0,8);});
+
+  on("btn-logout",async()=>{
+    if(state.role==="admin") await sb.auth.signOut();
+    state.role=null;state.customerId=null;state.loginMode="customer";state.view="login";render();
+  });
+
+  document.querySelectorAll("[data-tab]").forEach(el=>el.addEventListener("click",()=>{
+    state.tab=el.dataset.tab; if(state.tab==="add") state.previewCode=null; render();
+  }));
+
+  on("btn-regen",()=>{ state.previewCode=genCode(); const el=document.getElementById("code-preview"); if(el) el.textContent=state.previewCode; });
+  on("btn-add", doAddCustomer);
+  document.getElementById("inp-search")?.addEventListener("input",e=>{ state.search=e.target.value; render(); });
+
+  // Stamp / Redeem / Utang buttons
+  document.querySelectorAll("[data-action]").forEach(el=>{
+    el.addEventListener("click", async()=>{
+      const id=el.dataset.id;
+      const c=customers.find(x=>String(x.id)===String(id));
+      if(!c) return;
+      if(el.dataset.action==="stamp") {
+        await doStamp(c);
+      } else if(el.dataset.action==="redeem") {
+        state.modal=()=>modalRedeem(c);
+        render();
+        on("btn-modal-confirm",()=>doRedeem(c));
+        on("btn-modal-cancel",()=>{ state.modal=null; render(); });
+      } else if(el.dataset.action==="utang") {
+        state.modal=()=>modalUtang(c);
+        render();
+        on("btn-add-utang",()=>doAddUtang(c));
+        on("btn-add-payment",()=>doAddPayment(c));
+        on("btn-modal-cancel",()=>{ state.modal=null; render(); });
+      }
+    });
+  });
+
+  on("btn-modal-cancel",()=>{ state.modal=null; render(); });
+}
+
+// ─── ACTIONS ──────────────────────────────────────────
+async function doLogin() {
+  const errEl=document.getElementById("login-err");
+  const btnEl=document.getElementById("btn-login");
+
+  if(state.loginMode==="admin") {
+    const email=(document.getElementById("inp-email")?.value||"").trim();
+    const password=(document.getElementById("inp-password")?.value||"").trim();
+    if(!email||!password) return;
+    if(btnEl){btnEl.disabled=true;btnEl.textContent="Naglo-login...";}
+    const {error}=await sb.auth.signInWithPassword({email,password});
+    if(error){
+      if(errEl) errEl.style.display="block";
+      if(btnEl){btnEl.disabled=false;btnEl.textContent="Mag-login bilang Admin";}
+      return;
+    }
+    state.view="loading"; render();
+    await dbLoad();
+    state.role="admin"; state.view="main"; render();
+    return;
+  }
+
+  const val=(document.getElementById("inp-login")?.value||"").trim();
+  if(!val) return;
+  if(errEl) errEl.style.display="none";
+  if(btnEl){btnEl.disabled=true;btnEl.textContent="Naghahanap...";}
+  const cust=await dbGetByCode(val);
+  if(cust){
+    customers=[cust]; state.role="customer"; state.customerId=String(cust.id); state.view="main"; render();
+  } else {
+    if(errEl) errEl.style.display="block";
+    if(btnEl){btnEl.disabled=false;btnEl.textContent="Enter";}
+  }
+}
+
+async function doAddCustomer() {
+  const name=(document.getElementById("inp-name")?.value||"").trim();
+  const code=state.previewCode;
+  if(!name){showToast("Lagyan ng pangalan.");return;}
+  if(customers.find(c=>c.phone===code)){showToast("Duplicate code. I-click ang 🔄.");return;}
+  const btn=document.getElementById("btn-add");
+  if(btn){btn.disabled=true;btn.textContent="Nag-sasave...";}
+  try {
+    const newCust=await dbAdd(name,code);
+    customers.push(newCust);
+    state.previewCode=null; state.tab="customers";
+    showToast(`Na-add si ${name}! Code: ${code} ✓`);
+  } catch(e){ showToast("Error: "+(e.message||"Hindi na-save.")); }
+  render();
+}
+
+async function doStamp(c) {
+  if((c.stamps||0)>=MAX_STAMPS) return;
+  try {
+    const newStamps=(c.stamps||0)+1;
+    const newHistory=[{date:dateNow(),type:"stamp"},...(c.history||[])];
+    await dbUpdate(c.id,{stamps:newStamps,history:newHistory});
+    c.stamps=newStamps; c.history=newHistory;
+    showToast(`Stamp na-add kay ${c.name}! (${c.stamps}/${MAX_STAMPS}) ★`);
+    render();
+  } catch(e){ showToast("Error: "+(e.message||"Subukan ulit.")); }
+}
+
+async function doRedeem(c) {
+  state.modal=null; render();
+  try {
+    const newHistory=[{date:dateNow(),type:"reward"},...(c.history||[])];
+    await dbUpdate(c.id,{stamps:0,history:newHistory});
+    c.stamps=0; c.history=newHistory;
+    showToast(`Reward na-redeem ni ${c.name}! Card na-reset. 🎉`);
+    render();
+  } catch(e){ showToast("Error: "+(e.message||"Subukan ulit.")); }
+}
+
+async function doAddUtang(c) {
+  const amountVal=document.getElementById("utang-amount")?.value;
+  const note=(document.getElementById("utang-note")?.value||"").trim();
+  const amount=parseFloat(amountVal);
+  if(!amount||amount<=0){showToast("Ilagay ang tamang amount.");return;}
+  const newUtang=[{id:uid(),amount,remaining:amount,note,date:dateNow(),payments:[]},...(c.utang||[])];
+  try {
+    await dbUpdate(c.id,{utang:newUtang});
+    c.utang=newUtang;
+    showToast(`Nai-record ang utang na ${peso(amount)} ni ${c.name}.`);
+    state.modal=()=>modalUtang(c); render();
+    on("btn-add-utang",()=>doAddUtang(c));
+    on("btn-add-payment",()=>doAddPayment(c));
+    on("btn-modal-cancel",()=>{state.modal=null;render();});
+  } catch(e){ showToast("Error: "+(e.message||"Subukan ulit.")); }
+}
+
+async function doAddPayment(c) {
+  const utangId=document.getElementById("pay-utang-id")?.value;
+  const amountVal=document.getElementById("pay-amount")?.value;
+  const amount=parseFloat(amountVal);
+  if(!utangId){showToast("Piliin ang utang.");return;}
+  if(!amount||amount<=0){showToast("Ilagay ang tamang amount.");return;}
+  const newUtang=(c.utang||[]).map(u=>{
+    if(u.id!==utangId) return u;
+    const remaining=Math.max(0,(u.remaining??u.amount)-amount);
+    const payments=[...(u.payments||[]),{amount,date:dateNow()}];
+    return {...u,remaining,payments};
+  });
+  try {
+    await dbUpdate(c.id,{utang:newUtang});
+    c.utang=newUtang;
+    showToast(`Nai-record ang bayad na ${peso(amount)} ni ${c.name}. ✓`);
+    state.modal=()=>modalUtang(c); render();
+    on("btn-add-utang",()=>doAddUtang(c));
+    on("btn-add-payment",()=>doAddPayment(c));
+    on("btn-modal-cancel",()=>{state.modal=null;render();});
+  } catch(e){ showToast("Error: "+(e.message||"Subukan ulit.")); }
+}
+
+// ─── START ────────────────────────────────────────────
+sb.auth.getSession().then(({data:{session}})=>{
+  if(session){
+    dbLoad().then(()=>{ state.role="admin"; state.view="main"; render(); });
+  } else {
+    state.view="login"; render();
+  }
+});
+</script>
+</body>
+</html>
