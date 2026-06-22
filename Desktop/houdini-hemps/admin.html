@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Houdini Hemps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- ── ADMIN LOGIN SCREEN ── -->
+  <div class="admin-login-screen" id="adminLoginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <span>✦</span>
+        <h1>Houdini Hemps</h1>
+        <p>Admin Panel</p>
+      </div>
+      <input type="text" id="adminUsername" class="form-input" placeholder="Username" />
+      <input type="password" id="adminPassword" class="form-input" placeholder="Password" />
+      <button class="btn-primary" id="adminLoginBtn">Login</button>
+      <p class="login-error hidden" id="loginError">Invalid credentials.</p>
+    </div>
+  </div>
+
+  <!-- ── ADMIN PANEL ── -->
+  <div class="admin-panel hidden" id="adminPanel">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span>✦</span>
+        <span>Houdini Hemps</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="inventory">📦 Inventory</button>
+        <button class="nav-item" data-tab="customers">👤 Customers</button>
+        <button class="nav-item" data-tab="finance">💰 Finance</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="adminLogoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+
+      <!-- ══════════ INVENTORY TAB ══════════ -->
+      <section class="tab-content active" id="tab-inventory">
+        <div class="tab-header">
+          <h2>Inventory</h2>
+          <button class="btn-primary" id="openAddProductModal">+ Add Product</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="inventoryTable">
+            <thead>
+              <tr><th>Product</th><th>Price</th><th>Qty</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══════════ CUSTOMERS TAB ══════════ -->
+      <section class="tab-content hidden" id="tab-customers">
+        <div class="tab-header">
+          <h2>Customers</h2>
+          <button class="btn-primary" id="openAddCustomerModal">+ Add Customer</button>
+        </div>
+        <!-- Sub-tabs -->
+        <div class="sub-tabs">
+          <button class="sub-tab active" data-sub="points">Loyalty Points</button>
+          <button class="sub-tab" data-sub="debt">Debt Records</button>
+        </div>
+
+        <!-- POINTS SUB-TAB -->
+        <div class="sub-content active" id="sub-points">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Name</th><th>Code</th><th>Points</th><th>Free Items</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="customersBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- DEBT SUB-TAB -->
+        <div class="sub-content hidden" id="sub-debt">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Customer</th><th>Date</th><th>Amount</th><th>Note</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="debtBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ FINANCE TAB ══════════ -->
+      <section class="tab-content hidden" id="tab-finance">
+        <div class="tab-header">
+          <h2>Finance Tracker</h2>
+        </div>
+        <!-- Finance Sub-tabs -->
+        <div class="sub-tabs">
+          <button class="sub-tab active" data-sub="fin-entries">Sales & Expenses</button>
+          <button class="sub-tab" data-sub="fin-orders">Orders</button>
+          <button class="sub-tab" data-sub="fin-summary">Summary / Accounts</button>
+          <button class="sub-tab" data-sub="fin-transfers">Transfers</button>
+        </div>
+
+        <!-- SALES & EXPENSES -->
+        <div class="sub-content active" id="sub-fin-entries">
+          <div class="inline-form card">
+            <h3>New Entry</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="entryDate" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Account</label>
+                <select id="entryAccount" class="form-input">
+                  <option value="">— Select Account —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Type</label>
+                <select id="entryType" class="form-input">
+                  <option value="sales">Sales</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Amount (₱)</label>
+                <input type="number" id="entryAmount" class="form-input" placeholder="0.00" min="0" />
+              </div>
+              <div class="form-group span-2">
+                <label>Description</label>
+                <input type="text" id="entryDesc" class="form-input" placeholder="Brief description..." />
+              </div>
+              <div class="form-group span-2">
+                <label>Customer Name (optional)</label>
+                <input type="text" id="entryCustomer" class="form-input" placeholder="Leave blank if N/A" />
+              </div>
+            </div>
+            <button class="btn-primary" id="addEntryBtn">Add Entry</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Date</th><th>Account</th><th>Type</th><th>Amount</th><th>Description</th><th>Customer</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="entriesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ORDERS -->
+        <div class="sub-content hidden" id="sub-fin-orders">
+          <div class="inline-form card">
+            <h3>New Order</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="orderDate" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Customer</label>
+                <input type="text" id="orderCustomer" class="form-input" placeholder="Customer name" />
+              </div>
+              <div class="form-group">
+                <label>Item / Description</label>
+                <input type="text" id="orderDesc" class="form-input" placeholder="Item ordered" />
+              </div>
+              <div class="form-group">
+                <label>Total Amount (₱)</label>
+                <input type="number" id="orderTotal" class="form-input" placeholder="0.00" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Amount Paid (₱)</label>
+                <input type="number" id="orderPaid" class="form-input" placeholder="0.00" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="orderStatus" class="form-input">
+                  <option value="pending">Pending</option>
+                  <option value="partial">Partial</option>
+                  <option value="paid">Paid</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-primary" id="addOrderBtn">Add Order</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Date</th><th>Customer</th><th>Item</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUMMARY / ACCOUNTS -->
+        <div class="sub-content hidden" id="sub-fin-summary">
+          <div class="summary-layout">
+            <div class="inline-form card">
+              <h3>Add Account</h3>
+              <div class="form-group">
+                <label>Account Name</label>
+                <input type="text" id="accountName" class="form-input" placeholder="e.g. GCash, Cash on Hand" />
+              </div>
+              <div class="form-group">
+                <label>Starting Balance (₱)</label>
+                <input type="number" id="accountBalance" class="form-input" placeholder="0.00" min="0" />
+              </div>
+              <button class="btn-primary" id="addAccountBtn">Add Account</button>
+            </div>
+            <div class="accounts-list" id="accountsList"></div>
+          </div>
+          <div class="summary-totals card" id="summaryTotals"></div>
+        </div>
+
+        <!-- TRANSFERS -->
+        <div class="sub-content hidden" id="sub-fin-transfers">
+          <div class="inline-form card">
+            <h3>Transfer Funds</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="transferDate" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>From Account</label>
+                <select id="transferFrom" class="form-input">
+                  <option value="">— Select —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>To Account</label>
+                <select id="transferTo" class="form-input">
+                  <option value="">— Select —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Amount (₱)</label>
+                <input type="number" id="transferAmount" class="form-input" placeholder="0.00" min="0" />
+              </div>
+              <div class="form-group span-2">
+                <label>Note</label>
+                <input type="text" id="transferNote" class="form-input" placeholder="Optional note..." />
+              </div>
+            </div>
+            <button class="btn-primary" id="addTransferBtn">Transfer</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Date</th><th>From</th><th>To</th><th>Amount</th><th>Note</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="transfersBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ══════════ MODALS ══════════ -->
+
+  <!-- Add/Edit Product Modal -->
+  <div class="modal-overlay hidden" id="productModal">
+    <div class="modal-box">
+      <button class="modal-close" id="closeProductModal">✕</button>
+      <h2 id="productModalTitle">Add Product</h2>
+      <input type="hidden" id="productId" />
+      <div class="form-group">
+        <label>Product Name</label>
+        <input type="text" id="productName" class="form-input" placeholder="Product name" />
+      </div>
+      <div class="form-group">
+        <label>Price (₱)</label>
+        <input type="number" id="productPrice" class="form-input" placeholder="0.00" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="productQty" class="form-input" placeholder="0" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Description (optional)</label>
+        <input type="text" id="productDesc" class="form-input" placeholder="Short description" />
+      </div>
+      <button class="btn-primary full-width" id="saveProductBtn">Save Product</button>
+    </div>
+  </div>
+
+  <!-- Add Customer Modal -->
+  <div class="modal-overlay hidden" id="customerModal">
+    <div class="modal-box">
+      <button class="modal-close" id="closeCustomerModal">✕</button>
+      <h2>Add Customer</h2>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="customerName" class="form-input" placeholder="Customer name" />
+      </div>
+      <div class="form-group">
+        <label>Phone (optional)</label>
+        <input type="text" id="customerPhone" class="form-input" placeholder="09XX-XXX-XXXX" />
+      </div>
+      <p class="modal-hint">A unique member code will be auto-generated.</p>
+      <button class="btn-primary full-width" id="saveCustomerBtn">Add Customer</button>
+    </div>
+  </div>
+
+  <!-- Add Points Modal -->
+  <div class="modal-overlay hidden" id="pointsModal">
+    <div class="modal-box">
+      <button class="modal-close" id="closePointsModal">✕</button>
+      <h2>Update Points</h2>
+      <input type="hidden" id="pointsCustomerId" />
+      <p id="pointsCustomerLabel" class="modal-subtitle"></p>
+      <div class="form-group">
+        <label>Action</label>
+        <select id="pointsAction" class="form-input">
+          <option value="add">Add Points</option>
+          <option value="redeem">Redeem (use 10 pts for free item)</option>
+          <option value="deduct">Manual Deduct</option>
+        </select>
+      </div>
+      <div class="form-group" id="pointsAmountGroup">
+        <label>Points</label>
+        <input type="number" id="pointsAmount" class="form-input" placeholder="e.g. 1" min="1" />
+      </div>
+      <div class="form-group">
+        <label>Note</label>
+        <input type="text" id="pointsNote" class="form-input" placeholder="e.g. Purchase — ₱500 Gummies" />
+      </div>
+      <button class="btn-primary full-width" id="savePointsBtn">Save</button>
+    </div>
+  </div>
+
+  <!-- Add Debt Modal -->
+  <div class="modal-overlay hidden" id="debtModal">
+    <div class="modal-box">
+      <button class="modal-close" id="closeDebtModal">✕</button>
+      <h2 id="debtModalTitle">Record Debt</h2>
+      <input type="hidden" id="debtId" />
+      <div class="form-group">
+        <label>Customer</label>
+        <select id="debtCustomer" class="form-input"></select>
+      </div>
+      <div class="form-group">
+        <label>Amount (₱)</label>
+        <input type="number" id="debtAmount" class="form-input" placeholder="0.00" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Note</label>
+        <input type="text" id="debtNote" class="form-input" placeholder="What did they get?" />
+      </div>
+      <button class="btn-primary full-width" id="saveDebtBtn">Record Debt</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/customers.js"></script>
+  <script src="js/finance.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

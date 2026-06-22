@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Houdini Hemps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">✦</span>
+        <span class="logo-text">Houdini Hemps</span>
+      </div>
+      <nav class="header-nav">
+        <a href="#products" class="nav-link">Products</a>
+        <button class="btn-login-trigger" id="openLoginBtn">Member Login</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg-text">HEMPS</div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Premium Hemp Products</p>
+      <h1 class="hero-title">Disappear into<br/>something better.</h1>
+      <p class="hero-sub">Browse our curated selection — or login with your member code to track your loyalty points.</p>
+      <a href="#products" class="btn-hero">Shop Now</a>
+    </div>
+  </section>
+
+  <!-- ── PRODUCTS ── -->
+  <section class="products-section" id="products">
+    <div class="section-header">
+      <p class="section-eyebrow">Available Now</p>
+      <h2 class="section-title">Our Products</h2>
+    </div>
+    <div class="products-grid" id="productsGrid">
+      <div class="product-skeleton"></div>
+      <div class="product-skeleton"></div>
+      <div class="product-skeleton"></div>
+      <div class="product-skeleton"></div>
+    </div>
+  </section>
+
+  <!-- ── LOGIN MODAL ── -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <button class="modal-close" id="closeLoginBtn">✕</button>
+      <div class="modal-header">
+        <span class="modal-icon">✦</span>
+        <h2>Member Login</h2>
+        <p>Enter your member code to view your loyalty points.</p>
+      </div>
+      <div class="modal-body" id="loginView">
+        <input type="text" id="memberCodeInput" class="form-input" placeholder="Enter your code (e.g. HH-0001)" />
+        <button class="btn-primary full-width" id="loginBtn">Access My Account</button>
+        <p class="modal-hint">Don't have a code? Ask us in-store!</p>
+      </div>
+      <!-- LOGGED IN VIEW -->
+      <div class="modal-body hidden" id="memberView">
+        <div class="member-badge">
+          <div class="member-avatar" id="memberAvatar">J</div>
+          <div>
+            <p class="member-name" id="memberName">—</p>
+            <p class="member-code-display" id="memberCodeDisplay">—</p>
+          </div>
+        </div>
+        <div class="points-display">
+          <div class="points-circle">
+            <span class="points-num" id="memberPoints">0</span>
+            <span class="points-label">pts</span>
+          </div>
+          <div class="points-info">
+            <p class="points-headline" id="pointsHeadline">Keep going!</p>
+            <p class="points-sub" id="pointsSub">You need <span id="pointsNeeded">10</span> points for a free item.</p>
+          </div>
+        </div>
+        <div class="debt-banner hidden" id="debtBanner">
+          <span>⚠</span> Outstanding balance: <strong id="debtAmount">₱0.00</strong>
+        </div>
+        <div class="history-section">
+          <h3>Points History</h3>
+          <div class="history-list" id="pointsHistory">
+            <p class="empty-state">No history yet.</p>
+          </div>
+        </div>
+        <button class="btn-outline full-width" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>© 2025 Houdini Hemps. All rights reserved.</p>
+    <a href="admin.html" class="admin-link">Admin</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/customer.js"></script>
+</body>
+</html>
